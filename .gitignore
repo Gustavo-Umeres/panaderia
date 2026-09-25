@@ -27,3 +27,6 @@ Thumbs.db
 .vs/
 *LOCAL*.md
 *.local.md
+*LOCAL*.pdf
+*.pdf
+
