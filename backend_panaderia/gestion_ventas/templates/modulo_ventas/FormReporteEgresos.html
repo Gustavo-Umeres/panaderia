@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Egresos{% endblock %}
+{% block content %}
+<div class="container">
+    <h2 class="page-header">Registro de Egresos del Día</h2>
+    <div class="text-center mt-4 mb-4">
+        <p class="text-muted">Suma de gastos y devoluciones por notas de crédito.</p>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="p-4"> 
+                <form method="post" action="{% url 'gestion_ventas:generar_reporte_egresos' %}" id="generarEgresosForm">
+                    {% csrf_token %}
+                    <div class="row mb-3 align-items-center">
+                        <label for="id_total_nota_credito" class="col-md-5 col-form-label fw-bold">Total por Devoluciones:</label>
+                        <div class="col-md-7">
+                            <input type="text" class="form-control-plaintext ps-2 fw-bold" id="id_total_nota_credito" value="S/. {{ total_notas_credito_hoy|floatformat:2|default:'0.00' }}" readonly>
+                        </div>
+                    </div>
+                    <div class="row mb-4 align-items-center">
+                        <label for="txt_monto_gastos" class="col-md-5 col-form-label fw-bold">Total Gastos Varios:</label>
+                        <div class="col-md-7">
+                            <input type="text" inputmode="decimal" class="form-control border border-dark" id="txt_monto_gastos" name="txt_monto_gastos" placeholder="S/.0,00" value="{{ gastos_guardados|default:'' }}">
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row mb-4 align-items-center">
+                        <h4 class="col-md-5 h5 mb-0 fw-bold">Total Egresos del Día:</h4>
+                        <div class="col-md-7 h5 mb-0 fw-bold">
+                            <span>S/. </span>
+                            <span id="totalEgresosValue">0.00</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 mt-4">
+                        <button type="button" class="button btn-custom-blue btn-lg" id="btn_generar_reporte_egresos" name="btn_generar_reporte_egresos">Generar Reporte</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const notasCreditoInput = document.getElementById('id_total_nota_credito');
+    const gastosVariosInput = document.getElementById('txt_monto_gastos');
+    const totalValueDisplay = document.getElementById('totalEgresosValue');
+
+    function actualizarTotalEgresos() {
+        // Se añade .replace(',', '.') para manejar correctamente los decimales con coma.
+        const montoNotasCredito = parseFloat(notasCreditoInput.value.replace('S/.', '').replace(',', '.').trim()) || 0;
+        const montoGastosVarios = parseFloat(gastosVariosInput.value.replace(',', '.')) || 0;
+        totalValueDisplay.textContent = (montoNotasCredito + montoGastosVarios).toFixed(2);
+    }
+    gastosVariosInput.addEventListener('input', actualizarTotalEgresos);
+    actualizarTotalEgresos();
+
+    const form = document.getElementById('generarEgresosForm');
+    const submitButton = document.getElementById('btn_generar_reporte_egresos');
+
+    submitButton.addEventListener('click', function() {
+        const gastosValue = gastosVariosInput.value.trim();
+
+        // Si el campo no está vacío, se valida. Un campo vacío se permite y se trata como 0.
+        if (gastosValue !== '') {
+            // Regex que permite un signo negativo opcional para validarlo después.
+            if (!/^-?[0-9]+([,.][0-9]{1,2})?$/.test(gastosValue)) {
+                showModal({ type: 'error', body: 'SE ENCONTRARON CARACTERES NO VÁLIDOS EN UNO O MAS CAMPOS' });
+                return;
+            }
+
+            const gastosNumero = parseFloat(gastosValue.replace(',', '.'));
+            // La validación es solo para números negativos.
+            if (gastosNumero < 0) {
+                showModal({ type: 'error', body: 'EL TOTAL DE GASTOS DEBE SER MAYOR A CERO' });
+                return;
+            }
+        }
+
+        const confirmCallback = () => {
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok && data.status === 'success') {
+                    window.open(data.report_url, '_blank');
+                    window.location.href = data.redirect_url;
+                } else {
+                    const allowedMessages = [
+                        'SE ENCONTRARON CARACTERES NO VÁLIDOS EN UNO O MAS CAMPOS',
+                        'EL TOTAL DE GASTOS DEBE SER MAYOR A CERO'
+                    ];
+                    if (data && data.message && allowedMessages.includes(data.message)) {
+                        showModal({ type: 'error', body: data.message });
+                    }
+                }
+            })
+            .catch(error => {
+                // Silencio.
+            });
+        };
+
+        showModal({
+            type: 'confirm',
+            body: '¿DESEAS GENERAR REPORTE DE EGRESOS?',
+            confirmText: 'SI',
+            cancelText: 'NO',
+            onConfirm: confirmCallback
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Nota de Crédito{% endblock %}
+
+{% block content %}
+<style>
+ .option-card {
+   background-color: #f5f5dc;
+   cursor: pointer;
+   border: 1px solid #ddd;
+   transition: background-color 0.3s ease;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
+   text-decoration: none;
+   color: inherit;
+ }
+ .option-card:hover {
+   background-color: #eee8aa;
+ }
+ .option-card h4, .option-card img {
+   pointer-events: none;
+ }
+</style>
+
+<div class="container">
+    <h2 class="page-header">Nota de Crédito</h2>
+    <p class="lead mb-5 text-center">Elige qué deseas realizar</p>
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div id="btnNotaCreditoTotal" name="btnNotaCreditoTotal" class="card shadow-sm p-4 h-100 option-card"
+                 onclick="window.location.href='{% url 'gestion_ventas:devolucion_total' boleta_id=boleta.id %}'">
+                <img src="/static/images/total.png" alt="Devolución Total" class="img-fluid mb-3" style="max-width: 150px;">
+                <h4 class="card-title">Total</h4>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div id="btnNotaCreditoParcial" name="btnNotaCreditoParcial" class="card shadow-sm p-4 h-100 option-card"
+                 onclick="window.location.href='{% url 'gestion_ventas:devolucion_parcial' boleta_id=boleta.id %}'">
+                <img src="/static/images/parcial.png" alt="Devolución Parcial" class="img-fluid mb-3" style="max-width: 150px;">
+                <h4 class="card-title">Parcial</h4>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

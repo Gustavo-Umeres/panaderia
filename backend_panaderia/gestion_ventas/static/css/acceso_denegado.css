@@ -1,0 +1,131 @@
+
+.denial-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 2rem;
+    
+    background-color: #121212;
+    background-image: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+}
+
+.denial-content {
+    text-align: center;
+    color: #E0E0E0;
+    font-family: 'Roboto Mono', monospace;
+    max-width: 600px;
+    opacity: 0;
+    animation: fadeIn 1s 0.2s ease-out forwards;
+}
+
+.denial-icon {
+    font-size: 5rem;
+    color: #FFEB3B;
+    text-shadow: 0 0 15px rgba(255, 235, 59, 0.5), 0 0 30px rgba(255, 235, 59, 0.3);
+    margin-bottom: 1.5rem;
+    animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.denial-title {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 4.5rem;
+    letter-spacing: 4px;
+    color: #ffffff;
+    margin: 0 0 1rem 0;
+    position: relative;
+    text-transform: uppercase;
+}
+
+.denial-title::before,
+.denial-title::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.denial-title::before {
+    left: 2px;
+    text-shadow: -1px 0 #FF00C1; /* Magenta */
+    clip-path: inset(50% 0 50% 0);
+    animation: glitch-anim-1 3s infinite linear alternate-reverse;
+}
+
+.denial-title::after {
+    left: -2px;
+    text-shadow: -1px 0 #00FFF9; /* Cyan */
+    clip-path: inset(50% 0 50% 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+.denial-message {
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 450px;
+    margin: 0 auto 2.5rem auto;
+    color: #A0A0A0;
+}
+
+.denial-button {
+    display: inline-block;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: #FFEB3B;
+    background-color: transparent;
+    border: 2px solid #FFEB3B;
+    padding: 12px 30px;
+    transition: all 0.3s ease;
+}
+
+.denial-button:hover {
+    background-color: #FFEB3B;
+    color: #121212;
+    box-shadow: 0 0 25px rgba(255, 235, 59, 0.5);
+}
+
+/* --- Animaciones (sin cambios) --- */
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 25px rgba(255, 235, 59, 0.8);
+    }
+}
+
+@keyframes glitch-anim-1 {
+    0% { clip-path: inset(12% 0 85% 0); }
+    20% { clip-path: inset(51% 0 18% 0); }
+    40% { clip-path: inset(18% 0 45% 0); }
+    60% { clip-path: inset(80% 0 12% 0); }
+    80% { clip-path: inset(45% 0 45% 0); }
+    100% { clip-path: inset(90% 0 5% 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0% { clip-path: inset(78% 0 12% 0); }
+    20% { clip-path: inset(2% 0 58% 0); }
+    40% { clip-path: inset(88% 0 2% 0); }
+    60% { clip-path: inset(38% 0 42% 0); }
+    80% { clip-path: inset(5% 0 85% 0); }
+    100% { clip-path: inset(68% 0 15% 0); }
+}

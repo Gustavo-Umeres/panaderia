@@ -1,0 +1,193 @@
+/* gestion_ventas/static/gestion_ventas/css/base.css */
+
+/* --- ESTILOS GLOBALES --- */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+}
+
+/* --- Estilos del Contenido Principal --- */
+.main-content {
+    flex-grow: 1; /* Ocupa el espacio restante */
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column; /* Para que el contenido y la tabla se organicen verticalmente */
+}
+
+.content-header {
+    text-align: center;
+    color: #6a4400;
+    font-size: 2em;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ffc107;
+    padding-bottom: 10px;
+}
+
+.page-header {
+    text-align: center;
+    color: #f47a00;
+    font-weight: bold;
+    font-size: 1.75rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Estilos de Tabla --- */
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 15px; 
+    border: 2px solid black;
+}
+
+th, td { 
+    padding: 5px; 
+    text-align: center; 
+    border: 2px solid black;
+}
+
+th { 
+    background-color: #cccc;
+    color: #212529;
+}
+
+/* Aplica el color a todas las filas pares, excepto a la primera */
+tr:nth-child(odd){
+    background-color: #EEEEEE;
+}
+
+
+
+.table-responsive {
+    max-height: calc(100vh - 350px);
+    overflow-y: auto;
+}
+
+/* --- Estilos de Formularios --- */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control-sm,
+.form-control-sm.form-select {
+    height: 31px;
+    padding: 0.25rem 0.5rem;
+    line-height: 1.5;
+}
+
+/* --- Estilos de Botones Genéricos --- */
+.button {
+    border: 2px solid #000000;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 6px 16px;
+    display: inline-block;
+    transition: filter 0.3s ease;
+    background-color: var(--btn-bg-color);
+    color: var(--btn-text-color);
+}
+
+.button:hover{
+    filter: brightness(85%);
+}
+
+.button:active {
+    filter: brightness(75%);
+}
+
+.btn-custom-yellow {
+    --btn-bg-color: #ffc107; /* Amarillo */
+    --btn-text-color: #000000; /* Texto negro */
+}
+
+.btn-custom-red {
+    --btn-bg-color: #dc3545; /* Rojo */
+    --btn-text-color: #ffffff; /* Texto blanco */
+}
+
+.btn-custom-blue {
+    --btn-bg-color: #007bff; /* Azul */
+    --btn-text-color: #ffffff; /* Texto blanco */
+}
+
+.btn-custom-green {
+    --btn-bg-color: #28a745; /* Verde */
+    --btn-text-color: #ffffff; /* Texto blanco */
+}
+.btn-custom-gray {
+    --btn-bg-color: #6c757d; /* Gris */
+    --btn-text-color: #ffffff; /* Texto blanco */
+}
+ 
+/* --- Estilos para la página de Login --- */
+body.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #3b596d;
+    margin: 0;
+    padding: 0;
+}
+
+
+/* Estilos para el Toggle Switch (Interruptor) */
+.toggle-switch-checkbox {
+    display: none; /* Oculta el checkbox feo por defecto */
+}
+
+.toggle-switch-label {
+    cursor: pointer;
+    text-indent: -9999px;
+    width: 40px; /* Ancho de la pista del interruptor */
+    height: 20px; /* Alto de la pista */
+    background: #dc3545; /* Color ROJO cuando está apagado (Inhabilitado) */
+    display: block;
+    border-radius: 100px;
+    position: relative;
+    transition: background-color 0.3s; /* Animación suave del color */
+}
+
+/* Esto crea el círculo blanco que se mueve */
+.toggle-switch-label:after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px; /* Tamaño del círculo */
+    height: 16px;
+    background: #fff; /* Color del círculo */
+    border-radius: 90px;
+    transition: 0.3s; /* Animación suave del movimiento */
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+}
+
+/* --- La Magia --- */
+/* Cuando el checkbox (invisible) está marcado (checked)... */
+.toggle-switch-checkbox:checked + .toggle-switch-label {
+    background: #28a745; /* ...cambia el fondo a VERDE (Habilitado) */
+}
+
+/* Y también mueve el círculo blanco a la derecha */
+.toggle-switch-checkbox:checked + .toggle-switch-label:after {
+    left: calc(100% - 2px);
+    transform: translateX(-100%);
+}
+
+/* Evita el salto de línea en la celda de fecha y hora */
+#tbl_historial_boletas .datetime-cell {
+    white-space: nowrap;
+}

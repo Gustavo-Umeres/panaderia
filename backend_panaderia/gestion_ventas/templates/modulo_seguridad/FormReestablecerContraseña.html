@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Restablecer Contraseña{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="login-card mx-auto">
+            <div class="login-icon">
+                <img src="{% static 'images/lock.png' %}" alt="Icono de bloqueo">
+            </div>
+            <form method="post" action="{% url 'gestion_ventas:recuperar_contrasena_paso3_reset' %}">
+                {% csrf_token %}
+                <div class="input-button-container">
+                    <div class="form-group">
+                        <label for="txt_new_password">INGRESA SU NUEVA CONTRASEÑA</label>
+                        <input type="password" class="form-control" id="txt_new_password" name="txt_new_password" placeholder="Respuesta">
+                    </div>
+                    <div class="form-group">
+                        <label for="txt_re_new_password">REPITA SU NUEVA CONTRASEÑA</label>
+                        <input type="password" class="form-control" id="txt_re_new_password" name="txt_re_new_password" placeholder="Respuesta">
+                    </div>
+                    <button type="submit" id="btn_aceptar" name="btn_aceptar" class="button btn-custom-yellow">Aceptar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

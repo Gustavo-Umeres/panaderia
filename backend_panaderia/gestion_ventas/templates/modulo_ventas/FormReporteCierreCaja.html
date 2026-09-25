@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reporte de Cierre de Caja{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mx-auto" style="max-width: 600px;">
+        <h2 class="page-header">Reporte de Cierre de Caja: {{ today_date|date:"d/m/Y" }}</h2>
+        <form id="formCierreCaja" action="{% url 'gestion_ventas:confirmar_cierre_caja' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="reporte_boletas_id" value="{{ reporte_boletas_hoy.id }}">
+            <input type="hidden" name="reporte_caja_id" value="{{ reporte_caja_hoy.id }}">
+            <input type="hidden" name="reporte_egresos_id" value="{{ reporte_egresos_hoy.id }}">
+            <input type="hidden" name="descuadre" value="{{ descuadre|floatformat:2 }}">
+            
+            <div class="mb-3 row align-items-center">
+                <label class="col-sm-4 col-form-label fw-bold">Reporte de Boletas:</label>
+                <div class="col-sm-5">
+                    <input type="text" readonly class="form-control-plaintext text-start" value="S/. {{ reporte_boletas_hoy.monto_total|floatformat:2 }}">
+                </div>
+                <div class="col-sm-3 text-end">
+                    <a href="{% url 'gestion_ventas:ver_template_reporte_boletas' reporte_boletas_hoy.id %}" target="_blank" class="pressbtn_visualizar_reporte_boleta" title="Visualizar Reporte Boletas" style="color: black; text-decoration: none;"><i class="bi bi-eye-fill fs-5"></i></a>
+                </div>
+            </div>
+            <div class="mb-3 row align-items-center">
+                <label class="col-sm-4 col-form-label fw-bold">Reporte de Caja</label>
+                <div class="col-sm-5">
+                    <input type="text" readonly class="form-control-plaintext text-start" value="S/. {{ reporte_caja_hoy.monto_total|floatformat:2 }}">
+                </div>
+                <div class="col-sm-3 text-end">
+                    <a href="{% url 'gestion_ventas:ver_template_reporte_caja' reporte_caja_hoy.id %}" target="_blank" class="pressbtn_visualizar_reporte_caja" title="Visualizar Reporte Caja" style="color: black; text-decoration: none;"><i class="bi bi-eye-fill fs-5"></i></a>
+                </div>
+            </div>
+            <div class="mb-3 row align-items-center">
+                <label class="col-sm-4 col-form-label fw-bold">Reporte de Egresos:</label>
+                <div class="col-sm-5">
+                    <input type="text" readonly class="form-control-plaintext text-start" value="S/. {{ total_egresos_general|floatformat:2 }}">
+                </div>
+                <div class="col-sm-3 text-end">
+                    <a href="{% url 'gestion_ventas:ver_reporte_egresos' reporte_egresos_hoy.id %}" target="_blank" class="pressbtn_visualizar_reporte_egresos" title="Visualizar Reporte de Egresos" style="color: black; text-decoration: none;"><i class="bi bi-eye-fill fs-5"></i></a>
+                </div>
+            </div>
+            <hr>
+            <div class="mb-4 row align-items-center">
+                <label class="col-sm-4 col-form-label fw-bold">Descuadre:</label>
+                <div class="col-sm-8">
+                    <input type="text" readonly class="form-control-plaintext text-start fw-bold {% if descuadre < 0 %}text-danger{% else %}text-success{% endif %}" value="S/. {{ descuadre|floatformat:2 }}">
+                </div>
+            </div>
+            <div class="mb-4 row">
+                <label for="textarea_reason" class="col-sm-4 col-form-label fw-bold">Razón:</label>
+                <div class="col-sm-8">
+                    <textarea class="form-control border-black" id="textarea_reason" name="razon" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-4">
+                 <button type="button" class="button btn-custom-blue" id="btn_generar_reporte_cierre_caja" name="btn_generar_reporte_cierre_caja">Generar Reporte</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formCierreCaja');
+    const submitButton = document.getElementById('btn_generar_reporte_cierre_caja');
+    const reasonTextarea = document.getElementById('textarea_reason');
+    const descuadre = parseFloat("{{ descuadre|stringformat:'.2f'|default:'0.00' }}".replace(',', '.'));
+
+    submitButton.addEventListener('click', function() {
+        const razonValue = reasonTextarea.value.trim();
+
+        if (descuadre !== 0 && !razonValue) {
+            showModal({ type: 'error', body: 'DEBE COMPLETAR TODOS LOS CAMPOS' });
+            return;
+        }
+        if (razonValue.length > 500) {
+            showModal({ type: 'error', body: 'EL TEXTO INGRESADO NO DEBE SUPERAR LOS 500 CARACTERES' });
+            return;
+        }
+
+        showModal({
+            type: 'confirm',
+            body: '¿ESTAS SEGURO?',
+            confirmText: 'Si, Emitir',
+            cancelText: 'No, Cerrar',
+            onConfirm: () => {
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': data.csrfmiddlewaretoken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json().then(result => ({ ok: response.ok, result })))
+                .then(({ ok, result }) => {
+                    if (ok && result.status === 'success') {
+                        window.open(result.report_url, '_blank');
+                        window.location.href = result.redirect_url;
+                    } else {
+                        const allowedMessages = [
+                            'DEBE COMPLETAR TODOS LOS CAMPOS',
+                            'SE DETECTARON CARACTERES NO VÁLIDOS',
+                            'EL TEXTO INGRESADO NO DEBE SUPERAR LOS 500 CARACTERES'
+                        ];
+
+                        if (result && result.message && allowedMessages.includes(result.message)) {
+                            showModal({ type: 'error', body: result.message });
+                        }
+                    }
+                })
+                .catch(error => {
+                    // Silencio.
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

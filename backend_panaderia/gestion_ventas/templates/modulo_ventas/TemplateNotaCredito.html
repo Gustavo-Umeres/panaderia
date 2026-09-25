@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nota de Crédito N° {{ nota_credito.id }} - Panadería "Christian"</title>
+    {# Enlace a Bootstrap CSS para un diseño base #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif; /* Usar Arial o una fuente limpia para la boleta */
+            background-color: #f0f2f5; /* Un gris claro para el fondo */
+            display: flex;
+            flex-direction: column; /* Changed to column to stack boleta and buttons */
+            justify-content: flex-start; /* Align content from the top */
+            align-items: center; /* Center horizontally */
+            min-height: 100vh; /* Mínimo de altura para centrar verticalmente si el contenido es corto */
+            padding: 20px;
+        }
+        .boleta-container { /* Renamed from ticket-container */
+            width: 100%;
+            max-width: 350px; /* Ancho más pequeño para replicar el de la imagen */
+            background-color: #fff;
+            border: 1px solid #ccc; /* Borde más sutil */
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 5px; /* Bordes ligeramente redondeados */
+            margin-bottom: 20px; /* Add margin below the boleta container */
+        }
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header-section h4 {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .header-section p {
+            font-size: 0.7em;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+        .boleta-title { /* Used for "NOTA DE CRÉDITO" title */
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+            border-top: 1px dashed #ccc;
+            border-bottom: 1px dashed #ccc;
+            padding: 8px 0;
+        }
+        .boleta-title.numero { /* For the NC number */
+            font-size: 0.8em; /* Tamaño para el B001-000001 */
+            font-weight: normal;
+            margin-top: -8px; /* Ajustar posición */
+            margin-bottom: 15px;
+            border: none;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            margin-bottom: 3px;
+        }
+        .info-row .label {
+            font-weight: normal; /* No negrita para la etiqueta */
+            flex-shrink: 0; /* Evita que la etiqueta se encoja */
+            margin-right: 5px;
+        }
+        .info-row .value {
+            font-weight: normal; /* No negrita para el valor */
+            text-align: right;
+            flex-grow: 1; /* Permite que el valor ocupe el espacio restante */
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.8em;
+        }
+        .items-table th, .items-table td {
+            border-top: 1px dashed #ccc; /* Líneas punteadas como en la imagen */
+            border-bottom: none; /* Eliminar borde inferior de filas */
+            padding: 5px 0;
+            text-align: center;
+        }
+        /* Adjusted widths and alignment for Nota de Crédito specific columns */
+        .items-table th:first-child, .items-table td:first-child { text-align: left; width: 25%; } /* Código */
+        .items-table th:nth-child(2), .items-table td:nth-child(2) { text-align: left; width: 35%; } /* Descripción */
+        .items-table th:nth-child(3), .items-table td:nth-child(3) { text-align: center; width: 20%; } /* Devolución (Cantidad) */
+        .items-table th:nth-child(4), .items-table td:nth-child(4) { text-align: right; width: 20%; } /* Subtotal Devuelto */
+
+
+        .items-table thead th {
+            font-weight: bold;
+            border-bottom: 1px dashed #ccc; /* Borde inferior en el encabezado */
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            margin-top: 5px;
+            border-top: 1px dashed #ccc; /* Línea antes de los totales */
+            padding-top: 5px;
+        }
+        .summary-row.total {
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-top: 10px;
+            border-top: 1px dashed #ccc; /* Línea antes del total final */
+            padding-top: 5px;
+        }
+        .summary-row .label {
+            text-align: left;
+            flex-grow: 1;
+        }
+        .summary-row .value {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        .importe-letras {
+            font-size: 0.8em;
+            text-align: left; /* Alinear a la izquierda como en la imagen */
+            margin-top: 15px;
+            line-height: 1.3;
+        }
+        .details-text { /* For the 'Detalles' field */
+            font-size: 0.8em;
+            text-align: left;
+            margin-top: 15px;
+            line-height: 1.3;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+        .footer-section {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.8em;
+            line-height: 1.2;
+        }
+        .btn-actions {
+            text-align: center;
+            margin-top: 25px; /* Margin from the boleta-container */
+        }
+        .btn-actions .btn {
+            font-size: 0.85em;
+            padding: 8px 15px;
+            margin: 0 5px;
+        }
+
+        /* Estilos para impresión */
+        @media print {
+            body {
+                background-color: #fff;
+                margin: 0;
+                padding: 0;
+                display: block; /* Desactivar flex para impresión */
+            }
+            .boleta-container {
+                box-shadow: none;
+                border: none;
+                margin: 0;
+                max-width: 100%;
+                width: auto; /* Allow content to dictate width if no max-width */
+            }
+            .btn-actions {
+                display: none; /* Ocultar botones al imprimir */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="boleta-container">
+        <div class="header-section">
+            <h4 class="fw-bold">PANADERÍA "CHRISTIAN"</h4>
+            <p>RUC N° 10107507944</p>
+            <p>CALLE 1126 LOS PRECURSORES</p>
+            <p>SANTIAGO DE SURCO - LIMA</p>
+        </div>
+
+        <div class="boleta-title">NOTA DE CRÉDITO</div>
+        <div class="boleta-title numero">NC001 - {{ nota_credito.id|stringformat:"06d" }}</div> 
+
+        <div class="boleta-details">
+            <div class="info-row">
+                <span class="label">Fecha de emisión</span> : <span class="value">{{ nota_credito.fecha_emision|date:"d/m/Y" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Hora</span> : <span class="value">{{ nota_credito.hora_emision|time:"H:i:s" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Tipo de moneda</span> : <span class="value">PEN</span> {# Asumimos PEN por ahora #}
+            </div>
+            <div class="info-row">
+                <span class="label">Cajero</span> : <span class="value">{{ nota_credito.empleado.nombre }} {{ nota_credito.empleado.apellido }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Boleta Referencia</span> : <span class="value">{{ nota_credito.boleta.id|stringformat:"06d" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Solución</span> : <span class="value">Devolución:</span>
+            </div> 
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Devolución</th> {# Quantity returned #}
+                    <th>Subtotal Devuelto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in detalles_nota_credito %}
+                <tr>
+                    <td>{{ detalle.producto.codigo_producto }}</td>
+                    <td>{{ detalle.producto.nombre_producto }}</td>
+                    <td>{{ detalle.cantidad_devuelta }}</td>
+                    <td>S/. {{ detalle.monto_devuelto|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center;">No hay productos detallados para esta nota de crédito.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="summary-section">
+            <div class="summary-row total">
+                <span class="label">Importe Total a Devolver</span> : <span class="value">S/ {{ nota_credito.monto_total|floatformat:2 }}</span>
+            </div>
+        </div>
+        
+        <p class="importe-letras">SON : SOLES</p>
+        {# If you have a 'numero_a_letras' function passed in context, use it here: #}
+        {# <p class="importe-letras">SON : {{ importe_letras|upper }}</p> #}
+
+        {% if nota_credito.detalles %}
+        <div class="details-text">
+            <span class="fw-bold">Motivo de la Devolución:</span><br>
+            {{ nota_credito.detalles }}
+        </div>
+        {% endif %}
+
+    </div>
+
+    {# Enlace a Bootstrap JS (opcional, solo si necesitas funcionalidad JS de Bootstrap) #}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

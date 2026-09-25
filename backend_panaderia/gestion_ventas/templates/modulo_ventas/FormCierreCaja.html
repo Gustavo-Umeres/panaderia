@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reporte cierre de Caja{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="page-header">Cierre de Caja</h2>
+    
+    <div class="row justify-content-center g-4 align-items-start">
+        <div class="col-md-4 col-sm-6 d-flex">
+            <a id="ReporteBoletas" name="btnReporteBoletas" href="{% url 'gestion_ventas:reporte_boletas_view' %}" class="card text-decoration-none text-dark shadow-sm hover-effect option-card flex-grow-0 w-100">
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <h5 class="card-title mb-3" style="color: #dc3545; font-weight: bold;">Generar Reporte de Boletas</h5>
+                    <img src="{% static 'images/total.png' %}" class="img-fluid" alt="Generar Reporte de Boletas" style="max-height: 120px;">
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 col-sm-6 d-flex">
+            <div class="d-flex flex-column flex-fill gap-4">
+                <a id="btnReporteCaja" name="btnReporteCaja" href="{% url 'gestion_ventas:reporte_de_caja_view' %}" class="card flex-fill text-decoration-none text-dark shadow-sm hover-effect option-card">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                        <h5 class="card-title mb-3" style="color: #dc3545; font-weight: bold;">Generar Reporte de Caja</h5>
+                        <img src="{% static 'images/reporte_caja.png' %}" class="img-fluid" alt="Generar Reporte de Caja" style="max-height: 120px;">
+                    </div>
+                </a>
+                <a id="btnReporteEgresos" name="btnReporteEgresos" href="{% url 'gestion_ventas:gestionar_egresos' %}" class="card flex-fill text-decoration-none text-dark shadow-sm hover-effect option-card">
+                    <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                        <h5 class="card-title mb-3" style="color: #dc3545; font-weight: bold;">Generar Reporte de Egresos</h5>
+                        <img src="{% static 'images/egresos.png'%}" class="img-fluid" alt="Egresos" style="max-height: 120px;">
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-6 d-flex">
+            <a id="btnReporteCierreCaja" name="btnReporteCierreCaja" href="{% url 'gestion_ventas:reporte_cierre_de_caja_view' %}" class="card text-decoration-none text-dark shadow-sm hover-effect option-card flex-grow-0 w-100">
+                <div class="card-body text-center p-4 d-flex flex-column justify-content-center align-items-center">
+                    <h5 class="card-title mb-3" style="color: #dc3545; font-weight: bold;"> Generar Reporte de Cierre de Caja</h5>
+                    <img src="{% static 'images/reporte_cierre.png' %}" class="img-fluid" alt="Generar Reporte de Cierre de Caja" style="max-height: 120px;">
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .option-card { background-color: #f5f5dc; cursor: pointer; border: 1px solid #ddd; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease; }
+    .option-card:hover { background-color: #eee8aa; }
+    .hover-effect:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2) !important; }
+    .card.disabled { background-color: #e9ecef; cursor: not-allowed; opacity: 0.6; }
+    .card.disabled:hover { transform: none; box-shadow: none !important; background-color: #e9ecef; }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const boletasHecho = {{ reporte_boletas_hecho|yesno:"true,false" }};
+    const cajaHecho = {{ reporte_caja_hecho|yesno:"true,false" }};
+    const egresosHecho = {{ reporte_egresos_hecho|yesno:"true,false" }};
+    const cierreFinalHecho = {{ cierre_final_hecho|yesno:"true,false" }};
+
+    const reporteBoletasCard = document.getElementById('ReporteBoletas'); // Corrected ID to match HTML
+    const reporteCajaCard = document.getElementById('btnReporteCaja');
+    const egresosCard = document.getElementById('btnReporteEgresos');
+    const cierreFinalCard = document.getElementById('btnReporteCierreCaja');
+
+    function handleCardClick(card, condition, message) {
+        if (condition) {
+            card.classList.add('disabled');
+            card.addEventListener('click', function(event) {
+                event.preventDefault();
+                showModal({ type: 'error', body: message }); // Assuming showModal function exists globally
+            });
+        }
+    }
+
+    handleCardClick(reporteBoletasCard, boletasHecho, 'YA SE HA GENERADO UN REPORTE DE BOLETAS EL DÍA DE HOY');
+    handleCardClick(reporteCajaCard, cajaHecho, 'YA SE HA GENERADO UN REPORTE DE CAJA EL DÍA DE HOY');
+    handleCardClick(egresosCard, egresosHecho, 'YA SE HA GENERADO UN REPORTE DE GASTOS EL DIA DE HOY');
+    
+    if (cierreFinalHecho) {
+        handleCardClick(cierreFinalCard, true, 'YA SE HA GENERADO UN REPORTE DE CIERRE DE CAJA');
+    } else if (!boletasHecho || !cajaHecho || !egresosHecho) {
+        handleCardClick(cierreFinalCard, true, 'SE DEBE REGISTRAR LOS 3 REPORTES ANTERIORES ANTES DE CONTINUAR');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Autenticar Usuario{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row w-100 justify-content-center">
+        <div class="login-card mx-auto">
+            <div class="login-icon">
+                <img src="{% static '/images/avatar.png' %}" alt="Avatar">
+            </div>
+            <h3 class="login-title">INICIAR SESIÓN</h3>
+            <form method="post" action="{% url 'gestion_ventas:login_view' %}">
+                {% csrf_token %}
+                <div class="input-button-container">
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="txt_usuario" name="txt_usuario" autofocus placeholder="Usuario">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="txt_password" name="txt_password" placeholder="Contraseña">
+                    </div>
+                    <button type="submit" class="button btn-custom-yellow" id="btn_ingresar" name="btn_ingresar">Ingresar</button>
+                </div>
+            </form>
+
+            <div class="forgot-password">
+                <span>¿Olvidaste tu contraseña?</span>
+                <a href="{% url 'gestion_ventas:recuperar_contrasena_paso1_dni' %}">Recuperar</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

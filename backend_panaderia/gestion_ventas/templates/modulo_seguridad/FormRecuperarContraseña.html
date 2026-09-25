@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Recuperar Contraseña{% endblock %}
+
+{% block content %}
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="row w-100 justify-content-center">
+            <div class="login-card mx-auto">
+                <div class="login-icon">
+                    <img src="{% static 'images/lock.png' %}" alt="Icono de bloqueo">
+                </div>
+                <h3 class="login-title">RESPONDA LA SIGUIENTE PREGUNTA</h3>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="input-button-container">
+                        <div class="form-group">
+                            <select class="form-control" id="cmb_pregunta" name="cmb_pregunta" >
+                                <option value="" disabled selected hidden>Pregunta</option>
+                                {% for upr_obj in preguntas %}
+                                    <option value="{{ upr_obj.pregunta.id }}">{{ upr_obj.pregunta.pregunta }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="txt_respuesta" name="txt_respuesta" placeholder="Respuesta">
+                        </div>
+                        <button type="submit" id="btn_siguiente" name="btn_siguiente" class="button btn-custom-yellow">Siguiente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

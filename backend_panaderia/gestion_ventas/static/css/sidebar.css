@@ -1,0 +1,93 @@
+
+.sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background-color: #3b596d;
+    color: white;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar-header img {
+    max-width: 160px;
+    margin-bottom: 2%;
+}
+
+.sidebar-header h2 {
+    font-size: 1.2em;
+    color: #ffc107;
+    margin: 0;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu ul li {
+    position: relative;
+}
+
+.sidebar-menu ul li a {
+    display: block;
+    padding: 15px 20px;
+    color: white;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.sidebar-menu ul li a:hover, 
+.sidebar-menu ul li.active > a {
+    background-color: #4a6b80;
+}
+
+.sidebar-menu .menu-item-icon {
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.sidebar-menu .arrow-icon {
+    margin-left: auto;
+}
+
+.sidebar-menu ul ul {
+    background-color: #4a6b80;
+    display: none;
+}
+
+.sidebar-menu ul li.active > ul {
+    display: block;
+}
+
+.sidebar-menu ul ul li a {
+    padding-left: 40px;
+    font-size: 0.9em;
+}
+
+.sidebar-menu ul ul li a:hover {
+    background-color: #5b7f94;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #4a6b80;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.sidebar-footer a {
+    color: #ffc107;
+    text-decoration: none;
+}

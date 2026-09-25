@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Historial Boletas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="page-header">Historial de Boletas</h2>
+    <form action="{% url 'gestion_ventas:historial_boletas_view' %}" method="post" class="mb-3">
+        {% csrf_token %}
+        <div class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+            <label for="month_year_filter" class="form-label mb-0">Elige el mes:</label>
+            <input type="month" id="month_year_filter" name="month_year_filter" class="form-control" style="width: 180px;" value="{{ selected_year }}-{% if selected_month < 10 %}0{% endif %}{{ selected_month }}">
+            <button type="submit" class="button btn-custom-yellow">Filtrar</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table id="tbl_historial_boletas" name="tbl_historial_boletas">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">Código</th>
+                    <th style="width: 18%;">Fecha de Emisión</th>
+                    <th style="width: 45%;">Productos</th>
+                    <th style="width: 12%;">Emitido por</th>
+                    <th style="width: 10%;">Monto Total</th>
+                    <th style="width: 10%;">Devolución</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for boleta in boletas %}
+                <tr>
+                    <td>B{{ boleta.id|stringformat:"04d" }}</td>
+                    <td class="font-small datetime-cell">{{ boleta.fecha_emision|date:"d/m/Y" }} {{ boleta.hora_emision|time:"H:i:s" }}</td>
+                    <td class="product-cell">
+                        <div class="product-cell-content">
+                            {% for detalle in boleta.detalleboleta_set.all %}
+                                {{ detalle.codigo_producto.nombre_producto }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>{{ boleta.empleado.nombre }} {{ boleta.empleado.apellido }}</td>
+                    <td>S/. {{ boleta.monto_total|floatformat:2 }}</td>
+                    <td>S/. {{ boleta.total_devolucion|default:"0.00"|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3 align-items-center flex-wrap">
+        <div id="lbl_cantidad_boletas" name="lbl_cantidad_boletas" class="mb-2 mb-md-0">
+            <strong>Cantidad :</strong> {{ total_boletas_filtradas }}
+        </div>
+        <form action="{% url 'gestion_ventas:exportar_boletas_excel' %}" method="post" id="exportarBoletasForm">
+            {% csrf_token %}
+            <input type="hidden" id="month_year_filter_export" name="month_year_filter" value="{{ selected_year }}-{% if selected_month < 10 %}0{% endif %}{{ selected_month }}">
+            <button type="button" class="button btn-custom-blue" id="btn_exportar_boletas" name="btn_exportar_boletas">Exportar boletas</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const monthYearFilterInput = document.getElementById('month_year_filter');
+        const exportarBoletasForm = document.getElementById('exportarBoletasForm');
+        const exportButton = document.getElementById('btn_exportar_boletas');
+        const monthYearFilterExportInput = document.getElementById('month_year_filter_export');
+
+        function updateExportMonthYear() {
+            if (monthYearFilterInput && monthYearFilterExportInput) {
+                monthYearFilterExportInput.value = monthYearFilterInput.value;
+            }
+        }
+        monthYearFilterInput.addEventListener('change', updateExportMonthYear);
+        updateExportMonthYear();
+
+        exportButton.addEventListener('click', function() {
+            // **NUEVA VALIDACIÓN**
+            // Se verifica si el campo de mes y año está vacío.
+            if (!monthYearFilterInput.value) {
+                showModal({
+                    type: 'error',
+                    body: 'TIENE QUE SELECCIONAR EL MES QUE DESEA EXPORTAR'
+                });
+                return; // Detiene la ejecución si está vacío.
+            }
+
+            // Si no está vacío, continúa con la confirmación.
+            showModal({
+                type: 'confirm',
+                body: '¿DESEAS EXPORTAR EL REPORTE DE VENTAS MENSUAL?',
+                confirmText: 'Sí, Exportar',
+                cancelText: 'No, Cerrar',
+                onConfirm: () => {
+                    const monthYear = monthYearFilterInput.value;
+                    const checkUrl = `{% url 'gestion_ventas:verificar_boletas_para_exportar' %}?month_year_filter=${monthYear}`;
+                    
+                    fetch(checkUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success' && data.boletas_exist) {
+                                exportarBoletasForm.submit();
+                                showModal({
+                                    title: 'Éxito',
+                                    body: 'EL REGISTRO HA SIDO EXPORTADO EXITOSAMENTE',
+                                    type: 'success'
+                                });
+                            } else {
+                                showModal({
+                                    type: 'error',
+                                    body: 'NO HAY BOLETAS REGISTRADAS PARA EL MES SELECCIONADO'
+                                });
+                            }
+                        })
+                        .catch(error => {});
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

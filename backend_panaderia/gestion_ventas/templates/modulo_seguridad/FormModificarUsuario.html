@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modificar Usuario{% endblock %}
+
+{% block content %}
+    {# Contenedor principal del formulario #}
+    <div class="container"> 
+        <h2 class="page-header">Gestionar Usuarios</h2> 
+        <form method="post" action="{% url 'gestion_ventas:editar_usuario' usuario_id=usuario.id %}">
+            {% csrf_token %}
+
+            {# Fila principal que contiene las 4 columnas de campos #}
+            <div class="row justify-content-center g-3"> 
+
+                {# Columna 1: Información de Usuario (No editable) #}
+                <div class="col-md-3 col-sm-6"> 
+                    <div class="h-100 d-flex flex-column"> 
+                        <div class="py-1 px-2 flex-grow-1"> 
+                            
+                            <div class="mb-2"> 
+                                <label for="id_nombre" class="form-label fw-bold small">Nombres</label> 
+                                <input type="text" id="id_nombre" name="id_nombre" value="{{ nombre }}" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="id_apellido" class="form-label fw-bold small">Apellidos</label>
+                                <input type="text" id="id_apellido" name="id_apellido" value="{{ apellido }}" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="id_username" class="form-label fw-bold small">Usuario</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <input type="text" id="id_username" name="id_username" value="{{ username }}" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+
+                            <div class="mb-0">
+                                <label for="id_dni" class="form-label fw-bold small">DNI</label>
+                                <input type="number" id="id_dni" name="id_dni" value="{{ dni }}" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6"> 
+                    <div class="h-100 d-flex flex-column"> 
+                        <div class="py-1 px-2 flex-grow-1"> 
+                            <div class="mb-2">
+                                <label for="txt_contrasena" class="form-label fw-bold small">Contraseña</label>
+                                <input type="password" id="txt_contrasena" name="txt_contrasena" class="form-control form-control-sm">
+                            </div>
+
+                            <div class="mb-0"> 
+                                <label for="txt_confirmar_contrasena" class="form-label fw-bold small">Confirmar Contraseña</label>
+                                <input type="password" id="txt_confirmar_contrasena" name="txt_confirmar_contrasena" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 col-sm-6"> 
+                    <div class="h-100 d-flex flex-column"> 
+                        <div class="py-1 px-2 flex-grow-1"> 
+                            <div class="mb-2"> 
+                                <label for="pregunta_seguridad_1" class="form-label fw-bold small">Pregunta N°1</label>
+                                <select id="pregunta_seguridad_1" name="pregunta_seguridad_1" class="form-select form-select-sm bg-light" style="height: calc(1.8125rem + 2px);" disabled>
+                                    <option value="">Seleccione una pregunta</option>
+                                    {% for pregunta in preguntas_seguridad %}
+                                        <option value="{{ pregunta.id }}"
+                                            {% if 0 < selected_preguntas_ids|length and selected_preguntas_ids.0 == pregunta.id %}selected{% endif %}>
+                                            {{ pregunta.pregunta }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-3"> 
+                                <label for="respuesta_seguridad_1" class="form-label fw-bold small">Respuesta 1:</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <input type="text" id="respuesta_seguridad_1" name="respuesta_seguridad_1" value="********" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+
+                            <div class="mb-2"> 
+                                <label for="pregunta_seguridad_2" class="form-label fw-bold small">Pregunta N°2:</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <select id="pregunta_seguridad_2" name="pregunta_seguridad_2" class="form-select form-select-sm bg-light" style="height: calc(1.8125rem + 2px);" disabled>
+                                    <option value="">Seleccione una pregunta</option>
+                                    {% for pregunta in preguntas_seguridad %}
+                                        <option value="{{ pregunta.id }}"
+                                            {% if 1 < selected_preguntas_ids|length and selected_preguntas_ids.1 == pregunta.id %}selected{% endif %}>
+                                            {{ pregunta.pregunta }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-0"> 
+                                <label for="respuesta_seguridad_2" class="form-label fw-bold small">Respuesta 2:</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <input type="text" id="respuesta_seguridad_2" name="respuesta_seguridad_2" value="********" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Columna 4: Pregunta de Seguridad 3 (No editable) #}
+                <div class="col-md-3 col-sm-6"> 
+                    <div class="h-100 d-flex flex-column"> 
+                        <div class="py-1 px-2 flex-grow-1"> 
+                            <div class="mb-2"> 
+                                <label for="pregunta_seguridad_3" class="form-label fw-bold small">Pregunta N°3:</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <select id="pregunta_seguridad_3" name="pregunta_seguridad_3" class="form-select form-select-sm bg-light" style="height: calc(1.8125rem + 2px);" disabled>
+                                    <option value="">Seleccione una pregunta</option>
+                                    {% for pregunta in preguntas_seguridad %}
+                                        <option value="{{ pregunta.id }}"
+                                            {% if 2 < selected_preguntas_ids|length and selected_preguntas_ids.2 == pregunta.id %}selected{% endif %}>
+                                            {{ pregunta.pregunta }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="mb-0"> 
+                                <label for="respuesta_seguridad_3" class="form-label fw-bold small">Respuesta 3:</label>
+                                {# CORRECCIÓN: name y id son iguales #}
+                                <input type="text" id="respuesta_seguridad_3" name="respuesta_seguridad_3" value="********" class="form-control form-control-sm bg-light" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+
+            {# TABLA DE PRIVILEGIOS #}
+            <div class="row justify-content-center mt-1"> 
+                <div class="col-md-12 col-sm-12"> 
+                    <div class="py-1 px-2"> 
+                        <div class="table-responsive" style="max-height: 250px; overflow-y: auto;"> 
+                            <table id="tbl_privilegios" class="table table-bordered table-striped text-center align-middle table-sm w-100">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="fw-bold py-1 small" style="width: 30%;">Selección</th> 
+                                        <th scope="col" class="fw-bold py-1 small" style="width: 70%;">Privilegios del Sistema</th> 
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for privilegio in privilegios %}
+                                        <tr>
+                                            <td class="py-1"> 
+                                                <div class="form-check d-inline-block"> 
+                                                    {# NOTA: Ver aclaración sobre los checkboxes abajo #}
+                                                    <input type="checkbox" id="privilegio_{{ privilegio.id }}" name="privilegios" value="{{ privilegio.id }}"
+                                                           class="form-check-input" 
+                                                           {% if privilegio.id in selected_privilegios_ids %}checked{% endif %}>
+                                                    <label class="form-check-label sr-only" for="privilegio_{{ privilegio.id }}">Seleccionar {{ privilegio.nombre }}</label>
+                                                </div>
+                                            </td>
+                                            <td class="py-1 small text-start">{{ privilegio.nombre }}</td> 
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="2" class="text-center py-2 small">No se encontraron privilegios.</td> 
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            
+            <hr class="my-2">
+            <div class="text-center"> 
+                <button type="submit" id="btn_actualizar" class="button btn-custom-green">Guardar</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

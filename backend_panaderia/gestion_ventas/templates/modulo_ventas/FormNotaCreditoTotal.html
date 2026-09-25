@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Motivo de la Nota de Crédito{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mx-auto" style="max-width: 600px;">
+        <h2 class="page-header">Nota de Crédito - Devolución Total</h2>
+        <div class="mb-3 text-center">
+            <h4 id="lbl_numero_boleta" name="lbl_numero_boleta" class="card-subtitle mb-2 text-muted">Boleta N° B{{ boleta.id|stringformat:"04d" }}</h4>
+            <p class="card-text">Monto Total de Boleta: S/. {{ boleta.monto_total|floatformat:2 }}</p>
+        </div>
+        <div class="mb-3">
+            <label for="txtarea_detalles" class="form-label">Detalles:</label>
+            <textarea class="form-control border-black" id="txtarea_detalles" name="txtarea_detalles" rows="3" ></textarea>
+        </div>
+        <div class="text-center">
+            <button class="button btn-custom-blue" id="btn_emitir_notacredito" name="btn_emitir_notacredito">Emitir</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emitirNotaCreditoBtn = document.getElementById('btn_emitir_notacredito');
+    const detallesDevolucionInput = document.getElementById('txtarea_detalles');
+    const cierreCajaUrl = "{% url 'gestion_ventas:emitir_nota_credito' %}";
+
+    async function procesarDevolucion() {
+        const boletaId = {{ boleta.id }};
+        const detalles = detallesDevolucionInput.value.trim();
+
+        if (!detalles) {
+            showModal({ type: 'error', body: 'DEBE COMPLETAR TODOS LOS CAMPOS' });
+            return;
+        }
+        if (detalles.length > 500) {
+            showModal({ type: 'error', body: 'EL TEXTO INGRESADO NO DEBE SUPERAR LOS 500 CARACTERES' });
+            return;
+        }
+
+        const dataToSend = {
+            boleta_id: boletaId,
+            tipo_devolucion: 'total',
+            detalles: detalles,
+            items_devolucion: []
+        };
+        try {
+            const response = await fetch('{% url "gestion_ventas:confirmar_nota_credito" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify(dataToSend)
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                if (result.redirect_url) {
+                    window.open(result.redirect_url, '_blank');
+                }
+                showModal({
+                    type: 'success',
+                    body: result.message,
+                    onClose: () => { window.location.href = cierreCajaUrl; }
+                });
+            } else {
+                showModal({ type: 'error', body: result.message });
+            }
+        } catch (error) { }
+    }
+
+    emitirNotaCreditoBtn.addEventListener('click', function() {
+        showModal({
+            type: 'confirm',
+            body: '¿ESTAS SEGURO?',
+            confirmText: 'Si, Emitir',
+            cancelText: 'No, Cerrar',
+            onConfirm: procesarDevolucion
+        });
+    });
+});
+</script>
+{% endblock %}

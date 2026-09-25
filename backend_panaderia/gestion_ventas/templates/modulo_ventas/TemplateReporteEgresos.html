@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reporte de Egresos N° {{ reporte.id|stringformat:"05d" }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="font-sans min-h-screen flex justify-center items-center p-4" style="background-color: #3b596d;">
+
+  <div class="report-container w-full max-w-6xl bg-white p-6 border border-black shadow-lg box-border">
+    <div class="flex flex-wrap -mx-2 items-start">
+      <div class="w-full md:w-7/12 px-2">
+        <div class="info-field flex items-center mb-2 text-base">
+          <span class="info-label w-36 font-semibold text-gray-700">Empleado :</span>
+          <span class="info-value border border-gray-400 p-1 px-2 flex-grow bg-white rounded-md">{{ reporte.empleado.nombre }} {{ reporte.empleado.apellido }}</span>
+        </div>
+        <div class="info-field flex items-center mb-2 text-base">
+          <span class="info-label w-36 font-semibold text-gray-700">Hora de Registro :</span>
+          <span class="info-value border border-gray-400 p-1 px-2 flex-grow bg-white rounded-md">{{ reporte.hora_registro|time:"H:i:s" }}</span>
+        </div>
+        <div class="info-field flex items-center mb-2 text-base">
+          <span class="info-label w-36 font-semibold text-gray-700">Tipo de Reporte :</span>
+          <span class="info-value border border-gray-400 p-1 px-2 flex-grow bg-white rounded-md">Egresos</span>
+        </div>
+      </div>
+
+      <div class="w-full md:w-5/12 px-2 mt-4 md:mt-0 flex flex-col items-end justify-center">
+        <div class="flex flex-col items-center">
+          <div class="report-id-box border-2 border-yellow-500 p-4 text-center bg-gray-50 rounded-md w-full">
+            <h4 class="font-bold text-xl mb-1 text-gray-700">REPORTE DE EGRESOS</h4>
+            <h4 class="font-bold text-xl text-gray-700">N° {{ reporte.id|stringformat:"05d" }}</h4>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <div class="border border-black px-4 py-2 text-center rounded">
+              <div class="text-sm font-bold border-b border-black mb-1">Día</div>
+              <div class="text-lg">{{ reporte.fecha_registro|date:"d" }}</div>
+            </div>
+            <div class="border border-black px-4 py-2 text-center rounded">
+              <div class="text-sm font-bold border-b border-black mb-1">Mes</div>
+              <div class="text-lg">{{ reporte.fecha_registro|date:"m" }}</div>
+            </div>
+            <div class="border border-black px-4 py-2 text-center rounded">
+              <div class="text-sm font-bold border-b border-black mb-1">Año</div>
+              <div class="text-lg">{{ reporte.fecha_registro|date:"Y" }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <table class="w-full mt-6 text-base border-collapse">
+      <thead>
+        <tr>
+          <th class="border border-black p-2 text-center font-semibold bg-gray-200 text-gray-700 w-1/2 rounded-tl-md">Concepto</th>
+          <th class="border border-black p-2 text-center font-semibold bg-gray-200 text-gray-700 w-1/2 rounded-tr-md">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-black p-2 text-center">Total Gastos Varios</td>
+          <td class="border border-black p-2 text-center">S/. {{ reporte.total_gastos|floatformat:2 }}</td>
+        </tr>
+        <tr>
+          <td class="border border-black p-2 text-center">Total Devoluciones (Notas de Crédito)</td>
+          <td class="border border-black p-2 text-center">S/. {{ reporte.total_nota_credito|floatformat:2 }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td class="font-bold border-t- border-black text-right pr-6 pt-3 text-lg">Total</td>
+          <td class="border border-black text-center bg-gray-100 text-xl p-3 pt-3">S/. {{ reporte.total_reporte_egresos|floatformat:2 }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+</body>
+</html>

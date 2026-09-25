@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Motivo de la Nota de Crédito{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="mx-auto" style="max-width: 900px;">
+        <h2 class="page-header">Nota de Crédito - Devolución Parcial</h2>
+        <div class="mb-3 text-center">
+             <h4 id="lbl_numero_boleta" name="lbl_numero_boleta" class="card-subtitle mb-2 text-muted">Boleta N° B{{ boleta.id|stringformat:"04d" }}</h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table-hover text-center" id="tbl_detalles_productos_devolver" name="tbl_detalles_productos_devolver" width="100%">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Cant. Vendida</th>
+                        <th>P. Unitario</th>
+                        <th>Cant. a Devolver</th>
+                        <th>Subtotal Devolución</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detalle in detalles_boleta %}
+                    <tr data-product-code="{{ detalle.codigo_producto.codigo_producto }}" data-price="{{ detalle.precio_unitario_venta }}">
+                        <td>{{ detalle.codigo_producto.codigo_producto }}</td>
+                        <td>{{ detalle.codigo_producto.nombre_producto }}</td>
+                        <td>{{ detalle.cantidad }}</td>
+                        <td>S/. {{ detalle.precio_unitario_venta|floatformat:2 }}</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm cantidad-devolver" value="0" min="0" max="{{ detalle.cantidad }}" style="max-width: 80px; margin: auto;" id="txt_cantidad" name="txt_cantidad">
+                        </td>
+                        <td class="subtotal-devolucion">S/. 0.00</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="5" class="text-end pe-3">Monto Total a Devolver:</th>
+                        <th id="totalDevolucion" class="text-center">S/. 0.00</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="my-4">
+            <label for="txtarea_detalles" class="form-label">Detalles:</label>
+            <textarea class="form-control border-black" id="txtarea_detalles" name="txtarea_detalles" rows="3" ></textarea>
+        </div>
+        <div class="text-center">
+            <button class="button btn-custom-blue" id="pressbtn_emitir_notacredito" name="pressbtn_emitir_notacredito">Emitir</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const emitirNotaCreditoBtn = document.getElementById('pressbtn_emitir_notacredito');
+    const detallesDevolucionInput = document.getElementById('txtarea_detalles');
+    const cantidadInputs = document.querySelectorAll('.cantidad-devolver');
+    const totalDevolucionSpan = document.getElementById('totalDevolucion');
+    const cierreCajaUrl = "{% url 'gestion_ventas:emitir_nota_credito' %}";
+    
+    function calcularTotalDevolucion() {
+        let totalGeneral = 0;
+        cantidadInputs.forEach(input => {
+            const row = input.closest('tr');
+            const subtotalElement = row.querySelector('.subtotal-devolucion');
+            const cantidad = Number(input.value);
+            const precio = Number(row.dataset.price.replace(',', '.'));
+            if (cantidad > 0 && !isNaN(precio)) {
+                const subtotal = cantidad * precio;
+                totalGeneral += subtotal;
+                subtotalElement.textContent = `S/. ${subtotal.toFixed(2)}`;
+            } else {
+                subtotalElement.textContent = 'S/. 0.00';
+            }
+        });
+        totalDevolucionSpan.textContent = `S/. ${totalGeneral.toFixed(2)}`;
+        return totalGeneral;
+    }
+
+    async function procesarDevolucion() {
+        const boletaId = {{ boleta.id }};
+        const detalles = detallesDevolucionInput.value.trim();
+        const itemsDevolucion = [];
+        const validCharsRegex = /^[a-zA-Z0-9\s.,-]*$/;
+
+        if (!detalles) {
+            showModal({ type: 'error', body: 'DEBE COMPLETAR TODOS LOS CAMPOS' });
+            return;
+        }
+        if (!validCharsRegex.test(detalles)) {
+            showModal({ type: 'error', body: 'SE DETECTARON CARACTERES NO VÁLIDOS' });
+            return;
+        }
+        if (detalles.length > 500) {
+            showModal({ type: 'error', body: 'EL TEXTO INGRESADO NO DEBE SUPERAR LOS 500 CARACTERES' });
+            return;
+        }
+
+        cantidadInputs.forEach(input => {
+            const cantidad = Number(input.value);
+            if (cantidad > 0) {
+                const row = input.closest('tr');
+                itemsDevolucion.push({
+                    codigo_producto: row.dataset.productCode,
+                    cantidad: cantidad
+                });
+            }
+        });
+
+        const dataToSend = {
+            boleta_id: boletaId,
+            tipo_devolucion: 'parcial',
+            detalles: detalles,
+            items_devolucion: itemsDevolucion
+        };
+
+        try {
+            const response = await fetch('{% url "gestion_ventas:confirmar_nota_credito" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify(dataToSend)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                if (result.redirect_url) {
+                    window.open(result.redirect_url, '_blank');
+                }
+                showModal({
+                    type: 'success',
+                    body: result.message,
+                    onClose: () => { window.location.href = cierreCajaUrl; }
+                });
+            } else {
+                showModal({ type: 'error', body: result.message });
+            }
+        } catch (error) {}
+    }
+
+    cantidadInputs.forEach(input => {
+        input.addEventListener('input', () => {
+             const maxQty = parseInt(input.max);
+             if (parseInt(input.value) > maxQty) input.value = maxQty;
+             if (parseInt(input.value) < 0) input.value = 0;
+             calcularTotalDevolucion();
+        });
+    });
+
+    emitirNotaCreditoBtn.addEventListener('click', function() {
+        const totalADevolver = calcularTotalDevolucion();
+        if (totalADevolver <= 0) {
+            showModal({ type: 'error', body: 'DEBE SELECCIONAR AL MENOS UN PRODUCTO PARA DEVOLVER' });
+            return;
+        }
+        showModal({
+            type: 'confirm',
+            body: `¿ESTAS SEGURO?`,
+            confirmText: 'Si, Emitir',
+            cancelText: 'No, Cerrar',
+            onConfirm: procesarDevolucion
+        });
+    });
+
+    calcularTotalDevolucion();
+});
+</script>
+{% endblock %}

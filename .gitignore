@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+mi_entorno/
+env.bak/
+venv.bak/
+
+# Django
+*.log
+local_settings.py
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.vs/

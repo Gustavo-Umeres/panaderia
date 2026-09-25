@@ -1,0 +1,56 @@
+{# gestion_ventas/templates/gestion_ventas/templates/sidebar.html #}
+{% load static %}
+
+<div class="sidebar">
+    <div>
+        <div class="sidebar-header">
+            <img src="{% static 'images/logo_panaderia.png' %}" alt="Icono de Panadería">
+        </div>
+        <nav class="sidebar-menu">
+            <ul>
+                {% if 'Emitir Boleta' in user_privilegios or 'Cierre de Caja' in user_privilegios or 'Gestionar Productos' in user_privilegios or 'Emitir Nota Credito' in user_privilegios or 'Exportar Boletas' in user_privilegios %}
+                    <li class="{% if 'ventas' in request.path or 'productos' in request.path or 'cierre_caja' in request.path %}active{% endif %}">
+                        <a href="#">
+                            <span class="menu-item-icon"></span> Ventas <span class="arrow-icon">></span>
+                        </a>
+                        <ul>
+                            {% if 'Emitir Boleta' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:emitir_boleta' %}" id="btnEmitirBoleta" name="btnEmitirBoleta">Emitir Boleta</a></li>
+                            {% endif %}
+                            {% if 'Cierre de Caja' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:cierre_caja' %}" id="btnCierreCaja" name="btnCierreCaja">Cierre de Caja</a></li>
+                            {% endif %}
+                            {% if 'Gestionar Productos' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:gestionar_productos' %}" id="btnGestionarProductos" name="btnGestionarProductos">Gestionar Productos</a></li>
+                            {% endif %}
+                            {% if 'Emitir Nota de Credito' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:emitir_nota_credito' %}" id="btnEmitirNotaCredito" name="btnEmitirNotaCredito">Emitir Nota de Credito</a></li>
+                            {% endif %}
+                            {% if 'Exportar Boletas' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:historial_boletas_view' %}" id="btnExportarBoletas" name="btnExportarBoletas">Exportar Boletas</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endif %}
+
+                {% if 'Gestionar Usuarios' in user_privilegios %}
+                    <li class="{% if 'usuarios' in request.path %}active{% endif %}">
+                        <a href="#">
+                            <span class="menu-item-icon"></span> Usuario <span class="arrow-icon">></span>
+                        </a>
+                        <ul>
+                            {% if 'Gestionar Usuarios' in user_privilegios %}
+                                <li><a href="{% url 'gestion_ventas:gestionar_usuario' %}" id="btnGestionarUsuarios" name="btnGestionarUsuarios">Gestionar Usuarios</a></li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    <div class="sidebar-footer">
+        <a href="{% url 'gestion_ventas:logout_view' %}" id="logout-link" name="logout-link">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesion
+        </a>
+    </div>
+</div>

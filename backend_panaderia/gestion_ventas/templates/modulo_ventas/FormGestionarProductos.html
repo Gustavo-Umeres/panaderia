@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Productos{% endblock %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+{% block content %}
+<div class="container">
+    <h2 class="page-header">Gestionar Productos</h2>
+    <div class="d-flex justify-content-end mb-3 align-items-center">
+        <div> 
+            <a href="{% url 'gestion_ventas:registrar_producto' %}" class="button btn-custom-green" id="btnRegistrarProductos" name="btnRegistrarProductos">Registrar Productos</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table id="tbl_productos" name="tbl_productos">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Categoría</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <td>{{ producto.codigo_producto }}</td>
+                    <td>{{ producto.nombre_producto }}</td>
+                    <td>{{ producto.precio_unitario|floatformat:2 }}</td>
+                    <td>{{ producto.stock }}</td>
+                    <td>{{ producto.categoria.nombre_categoria }}</td>
+                    <td class="actions-cell">
+                            <div class="d-flex justify-content-center align-items-center gap-2">
+                                
+                                <a href="{% url 'gestion_ventas:editar_producto' producto_id=producto.codigo_producto %}" title="Modificar Producto" id="btn-modificar" name="btn-modificar">
+                                    <i class="fas fa-edit fa-lg" style="color: black;"></i> 
+                                </a>
+
+                                <form action="{% url 'gestion_ventas:cambiar_estado_producto' producto_id=producto.codigo_producto %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="checkbox" name="estado" id="estado_switch_{{ producto.codigo_producto }}" value="1" class="toggle-switch-checkbox" {% if producto.estado == 1 %}checked{% endif %} onchange="this.form.submit()">
+                                    <label for="estado_switch_{{ producto.codigo_producto }}" class="toggle-switch-label"></label>
+                                </form>
+
+                            </div>
+                    </td>
+                </tr>
+                {% empty %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

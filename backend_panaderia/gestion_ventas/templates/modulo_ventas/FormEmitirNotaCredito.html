@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Emitir Nota de Credito{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+            <h2 class="page-header">Emitir Nota de Crédito</h2>
+            <div>
+                <div>
+                    <div class="row justify-content-center">
+                        <div class="col-md-8 text-center">
+                            <label for="txt_codigo_boleta" class="form-label mb-3">Buscar boleta por su número</label>
+                            <div class="d-flex justify-content-center gap-2">
+                                <input type="text" id="txt_codigo_boleta" name="txt_codigo_boleta" class="form-control" style="width: 550px;">
+                                <button class="button btn-custom-yellow" type="button" id="btn_buscar" name="btn_buscar">Buscar</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="mensajeBoleta" class="mt-4 text-center"></div>
+                    <div class="table-responsive mt-2">
+                        <table class="table-bordered table-hover text-center align-middle">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th style="width: 15%;">Código</th>
+                                    <th style="width: 25%;">Fecha de Emisión</th>
+                                    <th style="width: 30%;">Emitida por</th>
+                                    <th style="width: 15%;">Monto Total</th>
+                                    <th style="width: 15%;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbl_registro_boletas" name="tbl_registro_boletas">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const inputBuscarBoleta = document.getElementById('txt_codigo_boleta');
+    const btnBuscarBoleta = document.getElementById('btn_buscar');
+    const cuerpoTablaBoletas = document.getElementById('tbl_registro_boletas');
+
+    const buscarBoleta = () => {
+        const numeroBoleta = inputBuscarBoleta.value.trim();
+        const validCharsRegex = /^[0-9]+$/;
+
+        if (!numeroBoleta) {
+            showModal({ body: "INGRESA NÚMERO DE BOLETA", type: 'error' });
+            return;
+        }
+        if (!validCharsRegex.test(numeroBoleta)) {
+            showModal({ body: "SE DETECTARON CARACTERES NO VÁLIDOS", type: 'error' });
+            return;
+        }
+
+        cuerpoTablaBoletas.innerHTML = '';
+
+        fetch(`{% url 'gestion_ventas:buscar_boleta_ajax' %}?query=${numeroBoleta}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const boleta = data.boleta;
+                    const verBoletaUrl = `{% url 'gestion_ventas:ver_boleta' 0 %}`.replace('0', boleta.id);
+                    const seleccionarNotaUrl = `{% url 'gestion_ventas:seleccionar_tipo_nota_credito' 0 %}`.replace('0', boleta.id);
+                    
+                    const row = `
+                        <tr>
+                            <td>B${String(boleta.id).padStart(4, '0')}</td>
+                            <td>${boleta.fecha_emision} ${boleta.hora_emision}</td>
+                            <td>${boleta.empleado_username}</td>
+                            <td>S/. ${parseFloat(boleta.monto_total).toFixed(2)}</td>
+                            <td class="text-center">
+                                <a href="${verBoletaUrl}" class="me-2" title="Visualizar Boleta" target="_blank"><i class="fas fa-eye" style="color: black;"></i></a>
+                                <a href="#" class="emitir-nc-link" 
+                                   data-url="${seleccionarNotaUrl}" 
+                                   data-tiene-nc="${boleta.tiene_nota_credito}" 
+                                   title="Emitir Nota de Crédito">
+                                   <i class="fas fa-file-invoice-dollar" style="color: red;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                    cuerpoTablaBoletas.innerHTML = row;
+                } else {
+                    showModal({ body: data.message, type: 'error' });
+                }
+            }).catch(error => {});
+    };
+
+    btnBuscarBoleta.addEventListener('click', buscarBoleta);
+    inputBuscarBoleta.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            buscarBoleta();
+        }
+    });
+
+    // ¡NUEVO! Event listener para el ícono de nota de crédito
+    cuerpoTablaBoletas.addEventListener('click', function(event) {
+        const link = event.target.closest('.emitir-nc-link');
+        if (link) {
+            event.preventDefault(); // Prevenir la navegación por defecto
+
+            const url = link.dataset.url;
+            const tieneNota = link.dataset.tieneNc === 'true'; // Convertir string a booleano
+
+            if (tieneNota) {
+                // Si ya tiene nota, muestra el modal de error y no hace nada más
+                showModal({ body: 'YA SE ASOCIÓ UNA NOTA DE CRÉDITO', type: 'error' });
+            } else {
+                // Si no tiene, permite la navegación
+                window.location.href = url;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

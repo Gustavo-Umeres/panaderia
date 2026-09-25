@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Emitir Boleta{% endblock %}
+
+{% block content %}
+<div class="boleta-container">
+    <div class="search-column">
+        <h2 class="page-header">Busqueda de Productos</h2>
+
+        <div class="search-area mb-3">
+            <div class="d-flex align-items-center mb-2">
+                <label for="txt_producto" class="search-label">Producto</label>
+                <input type="text" id="txt_producto" name="txt_producto" class="form-control">
+            </div>
+            <div class="text-start">
+                <button id="btn_BuscarProducto" name="btn_BuscarProducto" class="button btn-custom-yellow">Buscar</button>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table class="table-bordered table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th class="text-start">Nombre</th>
+                        <th>Categoria</th>
+                        <th>Precio (U)</th>
+                        <th>Stock</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl_products" name="tbl_products"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="vertical-divider"></div>
+
+    <div class="cart-column">
+        <h2 class="page-header">Lista de Productos</h2>
+        <div class="table-wrapper" style="min-height: 250px;">
+            <table class="table-bordered table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th class="text-start">Nombre</th>
+                        <th>Precio (U)</th>
+                        <th>Cantidad</th>
+                        <th>Accion</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl_lista_productos" name="tbl_lista_productos"></tbody>
+            </table>
+        </div>
+
+        <div class="cart-summary">
+            <div class="payment-methods">
+                <label class="payment-option">
+                    <input type="radio" id="chcbox_Pago_Efectivo" name="metodo_pago" value="Efectivo">
+                    <img src="{% static 'images/efectivo.png' %}" alt="Efectivo">
+                    <span>Efectivo</span>
+                </label>
+                <label class="payment-option">
+                    <input type="radio" id="chcbox_Pago_Yape" name="metodo_pago" value="Yape">
+                    <img src="{% static 'images/yape.png' %}" alt="Yape">
+                    <span>Yape</span>
+                </label>
+            </div>
+            <div class="total-display">
+                Total S/. <span id="total_amount">0.00</span>
+            </div>
+        </div>
+
+        <div class="final-actions">
+            <button type="button" id="btn_CancelarLista" name="btn_CancelarLista" class="button btn-custom-red ">Anular</button>
+            <button type="button" id="btn_ConfirmarVenta" name="btn_ConfirmarVenta" class="button btn-custom-blue">Confirmar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+    /* --- Estilos (sin cambios) --- */
+    .boleta-container { display: flex; gap: 20px; font-family: Arial, sans-serif; background-color: #fff; padding: 15px; height: calc(100vh - 100px); }
+    .search-column, .cart-column { flex: 1; display: flex; flex-direction: column; }
+    .vertical-divider { width: 1.5px; background-color: #000; }
+    .search-area .form-control { border-radius: 0; border: 1px solid #000; }
+    .search-label { margin-right: 10px; flex-shrink: 0; margin-bottom: 0; font-weight: 500; }
+    .table { border: 1px solid #000; }
+    .btn-action-table { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid #000; color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; line-height: 1; }
+    .btn-add-item { background-color: #28a745; }
+    .btn-remove-item { background-color: #dc3545; }
+    .cart-summary { display: flex; justify-content: space-between; align-items: center; padding: 15px 5px; margin-top: auto; }
+    .payment-methods { display: flex; gap: 20px; }
+    .payment-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; }
+    .payment-option img { width: 40px; height: 40px; }
+    .total-display { font-size: 1.2rem; font-weight: bold; border: 1.5px solid #000; padding: 5px 10px; }
+    .final-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 10px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('txt_producto');
+    const searchButton = document.getElementById('btn_BuscarProducto');
+    const searchResultsBody = document.getElementById('tbl_products');
+    const cartItemsBody = document.getElementById('tbl_lista_productos');
+    const totalAmountSpan = document.getElementById('total_amount');
+    const btnAnular = document.getElementById('btn_CancelarLista');
+    const btnConfirmar = document.getElementById('btn_ConfirmarVenta');
+
+    let cart = {};
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    const buscarProductosUrl = "{% url 'gestion_ventas:buscar_productos' %}";
+    const actualizarCarritoUrl = "{% url 'gestion_ventas:actualizar_carrito' %}";
+    const obtenerCarritoUrl = "{% url 'gestion_ventas:obtener_carrito' %}";
+    const procesarBoletaUrl = "{% url 'gestion_ventas:procesar_boleta' %}";
+    const verBoletaBaseUrl = "{% url 'gestion_ventas:ver_boleta' boleta_id=0 %}";
+
+    function handleRedirect(data) {
+        if (data && data.redirect_to_login) {
+            window.location.reload();
+            return true;
+        }
+        return false;
+    }
+
+    function renderCart() {
+        if (Object.keys(cart).length === 0) {
+            cartItemsBody.innerHTML = ''; // Tabla vacía
+        } else {
+            cartItemsBody.innerHTML = '';
+            for (const code in cart) {
+                const item = cart[code];
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.codigo_producto}</td>
+                    <td class="text-start">${item.nombre_producto}</td>
+                    <td>${item.precio_unitario.toFixed(2)}</td>
+                    <td><input type="number" class="form-control form-control-sm text-center quantity-input" value="${item.cantidad}" min="1" max="${item.stock}" data-product-code="${code}"></td>
+                    <td><button class="btn-action-table btn-remove-item" data-product-code="${code}">-</button></td>
+                `;
+                cartItemsBody.appendChild(row);
+            }
+        }
+        calculateTotal();
+    }
+
+    function renderSearchResults(data) {
+        if (handleRedirect(data)) return;
+
+        searchResultsBody.innerHTML = ''; 
+
+        if (data.status === 'not_found') {
+            showModal({ type: 'error', body: data.message });
+            return;
+        }
+        if (data.status === 'success' && data.productos && data.productos.length > 0) {
+            data.productos.forEach(product => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.codigo_producto}</td>
+                    <td class="text-start">${product.nombre_producto}</td>
+                    <td>${product.categoria_nombre}</td>
+                    <td>${product.precio_unitario.toFixed(2)}</td>
+                    <td>${product.stock}</td>
+                    <td><button class="btn-action-table btn-add-item" data-product-code="${product.codigo_producto}" data-product-name="${product.nombre_producto}" data-product-price="${product.precio_unitario}" data-product-stock="${product.stock}">+</button></td>
+                `;
+                searchResultsBody.appendChild(row);
+            });
+        }
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        for (const code in cart) {
+            total += cart[code].precio_unitario * cart[code].cantidad;
+        }
+        totalAmountSpan.textContent = total.toFixed(2);
+    }
+    
+    function updateCartInSession() {
+        fetch(actualizarCarritoUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrftoken},
+            body: JSON.stringify(cart)
+        })
+        .then(response => response.json())
+        .then(data => { handleRedirect(data); })
+        .catch(error => {});
+    }
+    
+    searchButton.addEventListener('click', function() {
+        const query = searchInput.value.trim();
+        const validCharsRegex = /^[a-zA-Z0-9\s-]*$/;
+
+        if (!query) {
+            showModal({ type: 'error', body: 'INGRESE UN CÓDIGO O NOMBRE DE PRODUCTO VÁLIDO' });
+            return;
+        }
+        if (!validCharsRegex.test(query)) {
+            showModal({ type: 'error', body: 'SE DETECTARON CARACTERES NO VÁLIDOS' });
+            return;
+        }
+        
+        fetch(`${buscarProductosUrl}?query=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => renderSearchResults(data))
+            .catch(error => {});
+    });
+    searchInput.addEventListener('keypress', e => { if (e.key === 'Enter') searchButton.click(); });
+    
+    searchResultsBody.addEventListener('click', function(event) {
+        const button = event.target.closest('.btn-add-item');
+        if (!button) return;
+
+        const { productCode, productName, productPrice, productStock } = button.dataset;
+        const price = parseFloat(productPrice);
+        const stock = parseInt(productStock);
+
+        if (stock <= 0) {
+            showModal({ type: 'error', body: 'STOCK INSUFICIENTE' });
+            return;
+        }
+
+        if (cart[productCode]) {
+            if (cart[productCode].cantidad < stock) {
+                cart[productCode].cantidad++;
+            } else {
+                showModal({ type: 'error', body: 'STOCK INSUFICIENTE' });
+            }
+        } else {
+            cart[productCode] = { codigo_producto: productCode, nombre_producto: productName, precio_unitario: price, cantidad: 1, stock: stock };
+        }
+        renderCart();
+        updateCartInSession();
+    });
+
+    cartItemsBody.addEventListener('click', function(event) {
+        const button = event.target.closest('.btn-remove-item');
+        if (!button) return;
+        delete cart[button.dataset.productCode];
+        renderCart();
+        updateCartInSession();
+    });
+
+    cartItemsBody.addEventListener('change', function(event) {
+        const input = event.target.closest('.quantity-input');
+        if (!input) return;
+        const productCode = input.dataset.productCode;
+        let newQuantity = parseInt(input.value);
+        const stock = cart[productCode].stock;
+
+        if (isNaN(newQuantity) || newQuantity < 1) newQuantity = 1;
+        if (newQuantity > stock) {
+            newQuantity = stock;
+            showModal({ type: 'error', body: 'STOCK INSUFICIENTE' });
+        }
+        input.value = newQuantity;
+        cart[productCode].cantidad = newQuantity;
+        renderCart();
+        updateCartInSession();
+    });
+
+    btnAnular.addEventListener('click', function() {
+        if (Object.keys(cart).length === 0) {
+            showModal({ type: 'error', body: 'LA LISTA YA SE ENCUENTRA VACÍA' });
+            return;
+        }
+        showModal({
+            type: 'confirm',
+            body: '¿DESEAS ANULAR LA LISTA DE PRODUCTOS?',
+            onConfirm: () => {
+                cart = {};
+                renderCart();
+                updateCartInSession();
+                searchResultsBody.innerHTML = ''; // Limpia la tabla de búsqueda
+                searchInput.value = '';
+            }
+        });
+    });
+
+    btnConfirmar.addEventListener('click', function() {
+        if (Object.keys(cart).length === 0) {
+            showModal({ type: 'error', body: 'NO HAY NINGUN PRODUCTO EN LA LISTA' });
+            return;
+        }
+        const metodoPagoSeleccionado = document.querySelector('input[name="metodo_pago"]:checked');
+        if (!metodoPagoSeleccionado) {
+            showModal({ type: 'error', body: 'NO SE SELECCIONÓ EL MÉTODO' });
+            return;
+        }
+        const metodoPago = metodoPagoSeleccionado.value;
+
+        fetch(procesarBoletaUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+            body: JSON.stringify({ cart: cart, metodo_pago: metodoPago })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (handleRedirect(data)) return;
+
+            if (data.status === 'success') {
+                window.open(verBoletaBaseUrl.replace('0', data.boleta_id), '_blank');
+                cart = {};
+                renderCart();
+                updateCartInSession();
+                searchResultsBody.innerHTML = '';
+                searchInput.value = '';
+                document.querySelectorAll('input[name="metodo_pago"]').forEach(radio => radio.checked = false);
+            } else {
+                showModal({ type: 'error', body: data.message });
+            }
+        })
+        .catch(error => {});
+    });
+
+    fetch(obtenerCarritoUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (handleRedirect(data)) return;
+            if (data.status === 'success' && Object.keys(data.cart).length > 0) {
+                cart = data.cart;
+                renderCart();
+            }
+        })
+        .catch(error => {});
+});
+</script>
+{% endblock extra_js %}

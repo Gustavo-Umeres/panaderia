@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestionar Usuarios{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="page-header">Gestionar Usuarios</h2>
+    <div class="table-responsive" id="tbl_usuarios" name="tbl_usuarios">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Usuario</th>
+                    <th>DNI</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.nombre|title }}</td>
+                    <td>{{ usuario.apellido|title }}</td>
+                    <td>{{ usuario.username }}</td>
+                    <td>{{ usuario.dni }}</td>
+                    
+                    <td class="actions-cell">
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            
+                            <a href="{% url 'gestion_ventas:editar_usuario' usuario_id=usuario.id %}" title="Modificar Usuario" id="btn_modificar_usuario" name="id_btn_modificar_usuario">
+                                <i class="fas fa-edit fa-lg" style="color: black;"></i> 
+                            </a>
+
+                            <form action="{% url 'gestion_ventas:cambiar_estado_usuario' usuario_id=usuario.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="checkbox" 
+                                       name="estado_switch" 
+                                       id="estado_switch_{{ usuario.id }}" 
+                                       value="1" 
+                                       class="toggle-switch-checkbox" 
+                                       {% if usuario.estado == 1 %}checked{% endif %} 
+                                       onchange="this.form.submit()">
+                                <label for="estado_switch_{{ usuario.id }}" class="toggle-switch-label" title="Habilitar/Deshabilitar Usuario"></label>
+                            </form>
+
+                        </div>
+                    </td>
+                    </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay usuarios registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="d-flex justify-content-start mt-3">
+        <a href="{% url 'gestion_ventas:crear_usuario' %}" class="button btn-custom-green">
+            Registrar Usuario
+        </a>
+    </div>
+</div>
+{% endblock %}

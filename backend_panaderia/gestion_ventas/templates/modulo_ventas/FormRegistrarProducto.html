@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registrar Producto{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="page-header mb-4">Gestionar Productos</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row">
+            
+            <div class="col-md-6">
+                <div class="form-group mb-3"> {# Agregado mb-3 para espaciado vertical #}
+                    <label for="txt_nombre" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="txt_nombre" name="txt_nombre" >
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="txt_precio" class="form-label">Precio</label>
+                    <input type="number" step="0.01" class="form-control" id="txt_precio" name="txt_precio" >
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="txt_stock" class="form-label">Stock</label>
+                    <input type="number" class="form-control" id="txt_stock" name="txt_stock" >
+                </div>
+                
+                <div class="form-group mb-3">
+                    <label for="cmb_categoria" class="form-label">Categoria</label>
+                    <select class="form-control" id="cmb_categoria" name="cmb_categoria" >
+                        <option value="">Seleccione una categoría</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}">{{ categoria.nombre_categoria }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="d-flex justify-content-center mt-4 gap-3">
+            <button type="submit" class="button btn-custom-blue" id="btnRegistrar" name="btnRegistrar">Registrar</button>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}
